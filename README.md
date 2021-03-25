@@ -1,7 +1,7 @@
 <p align=center>
   <img width="500" src="https://i.imgur.com/bvRuZzu.png"/>
   <br>
-  <span><strong>OBS Audio Switcher</strong> It is a tool that works together with OBS to add the functionality of changing scenes using audio levels. This is a modified version for Torpid Gaming Network</span><span>The original can be found here: https://github.com/EsteveSegura/SwitchSceneOnAudioOBS</span><br />
+  <span><strong>OBS Audio Switcher</strong> It is a tool that works together with OBS to add the functionality of changing scenes using audio levels. This is a modified version for Torpid Gaming Network; the original can be found here: https://github.com/EsteveSegura/SwitchSceneOnAudioOBS</span><br />
 <img src="https://img.shields.io/badge/NodeJS-10.13.0-green"> 
 <img src="https://img.shields.io/badge/License-MIT-blue">
 <a href="http://girlazo.com"><img src="https://img.shields.io/badge/Website-up-green"></a>
