@@ -22,13 +22,19 @@ if(titleSlave != null){
 
 navigator.mediaDevices.enumerateDevices().then(function (devices) {
     devices.forEach(function (device) {
+        var newlabel = '';
+        if (device.label == '') {
+            newlabel = (devicesAvailable.length + 1);
+        } else {
+            newlabel = device.label;
+        }
         devicesAvailable.push({
             'kind': device.kind,
-            'lablel': device.label,
+            'label': newlabel,
             'deviceId': device.deviceId
         })
 
-        let opt = device.kind + ": " + device.label;
+        let opt = device.kind + ": " + newlabel;
         let el = document.createElement("option");
         el.textContent = opt;
         el.value = device.deviceId;
