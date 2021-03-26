@@ -25,10 +25,13 @@ master = {}
 const active_state = 'expanded'; // name of the filter to activate when they are talking
 const inactive_state = 'normal'; // name of filter when not talking
 const quiet_time = 4000; // how long input is quiet before switching to inactive state
-const interval_period = 300; // how often to run the changeScene function
+const interval_period = 150; // how often to run the changeScene function
 
 // this tracks how many milliseconds since the indicated source went quiet, aka dropped below the threshold for activation/expansion
 state_tracker_quiet = {};
+
+// track current state of source, so we dont have to keep sending signals all the time flooding the ws connection
+state_tracker_state = {};
 
 io.on('connection', (socket) => {
     socket.on('audioInput', (body) => {
@@ -61,24 +64,41 @@ function setValues(val) {
 
 function setActive(source_name) {
     // send active state signal
-    obs.send('SetSourceFilterVisibility', {'sourceName': source_name, 'filterName': active_state, 'filterEnabled': true});
-    state_tracker_quiet[source_name] = 0;
+    if (!(source_name in state_tracker_state)) {
+        // no state info, lets default it to inactive and then do nothing
+        state_tracker_state[source_name] = 'inactive';
+    } else {
+        if (state_tracker_state[source_name] == 'inactive'){
+            obs.send('SetSourceFilterVisibility', {'sourceName': source_name, 'filterName': active_state, 'filterEnabled': true});
+            state_tracker_quiet[source_name] = 0;
+            state_tracker_state[source_name] = 'active';
+        }
+    }
+    
 }
 
 function setQuiet(source_name) {
     // Quiet, but not neccesarily inactive yet
     if (state_tracker_quiet[source_name] > quiet_time) {
-        setInactive(source_name)
+        setInactive(source_name);
     } else {
-        var prior_quiet_value = state_tracker_quiet[source_name]
+        var prior_quiet_value = state_tracker_quiet[source_name];
         state_tracker_quiet[source_name] = prior_quiet_value + interval_period;
     }
 }
 
 function setInactive(source_name) {
     // send inactive state signal
-    obs.send('SetSourceFilterVisibility', {'sourceName': source_name, 'filterName': inactive_state, 'filterEnabled': true});
-    state_tracker_quiet[source_name] = 0;
+    if (!(source_name in state_tracker_state)) {
+        // no state info, lets default it to inactive and then do nothing
+        state_tracker_state[source_name] = 'inactive';
+    } else {
+        if (state_tracker_state[source_name] == 'active'){
+            obs.send('SetSourceFilterVisibility', {'sourceName': source_name, 'filterName': inactive_state, 'filterEnabled': true});
+            state_tracker_quiet[source_name] = 0;
+            state_tracker_state[source_name] = 'inactive';
+        }
+    }
 }
 
 function changeScene() {
