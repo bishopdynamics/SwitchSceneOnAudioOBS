@@ -15,18 +15,23 @@ let titleSlave = document.getElementById("slave-name");
 let actualOpt = ""
 let dbLimit = -25
 
-console.log(titleSlave)
 if(titleSlave != null){
     titleSlave.innerHTML = `Slave-${getParameterByName("slave")}`;
 }
 
 navigator.mediaDevices.enumerateDevices().then(function (devices) {
+    var numdevices = {}; // tracks number of each device kind
     devices.forEach(function (device) {
         var newlabel = '';
-        if (device.label == '') {
-            newlabel = (devicesAvailable.length + 1);
+        if (!(device.kind in numdevices)) {
+            numdevices[device.kind] = 1;
         } else {
-            newlabel = device.label;
+            numdevices[device.kind]++;
+        }
+        if (device.label == '') {
+            newlabel = numdevices[device.kind];
+        } else {
+            newlabel = numdevices[device.kind] + ' - ' + device.label;
         }
         devicesAvailable.push({
             'kind': device.kind,
@@ -41,7 +46,8 @@ navigator.mediaDevices.enumerateDevices().then(function (devices) {
         select.appendChild(el);
 
     });
-    console.log(devicesAvailable)
+    //console.log('Available devices:');
+    //console.log(devicesAvailable);
 }).catch(function (err) {
     console.log(err.name + ": " + err.message);
 });
@@ -53,7 +59,7 @@ function getNewOption() {
 function getVol(val){
     sliderValue.innerHTML = val;
     dbLimit = val
-    console.log(val)
+    //console.log(val)
 }
 
 function getParameterByName(name, url) {
@@ -82,7 +88,7 @@ function vuMeter(streamdata) {
     let analyser = audioContextVar.createAnalyser();
     let microphone = audioContextVar.createMediaStreamSource(streamdata);
     let javascriptNode = audioContextVar.createScriptProcessor(2048, 1, 1);
-    console.log(analyser)
+    //console.log(analyser)
     analyser.smoothingTimeConstant = 0.8;
     analyser.fftSize = 1024;
 
@@ -92,7 +98,7 @@ function vuMeter(streamdata) {
 
     let canvasContext = $("#canvas")[0].getContext("2d");
     javascriptNode.onaudioprocess = function () {
-        console.log("process")
+        //console.log("process")
         let array = new Uint8Array(analyser.frequencyBinCount);
         analyser.getByteFrequencyData(array);
         let values = 0;
@@ -104,7 +110,7 @@ function vuMeter(streamdata) {
 
         let average = values / length;
         let actualVolume = Math.round(average - 40)
-        console.log(actualVolume);
+        //console.log(actualVolume);
         sendSocketData(actualVolume, typeSelected.value, sceneSelected.value)
         canvasContext.clearRect(0, 0, 150, 300);
         canvasContext.fillStyle = '#BadA55';
@@ -117,7 +123,10 @@ function vuMeter(streamdata) {
 }
 //
 function sendSocketData(volume, id, sceneTyped) {
-    
-    let objData = { 'volume': volume, 'id': getParameterByName("slave") != null ? `${id}-${getParameterByName("slave")}` : `${id}`, 'scene': sceneTyped, 'limit': parseInt(dbLimit) }
-    socket.emit('audioInput', (objData));
+    try {
+        let objData = { 'volume': volume, 'id': getParameterByName("slave") != null ? `${id}-${getParameterByName("slave")}` : `${id}`, 'scene': sceneTyped, 'limit': parseInt(dbLimit) }
+        socket.emit('audioInput', (objData));
+    } catch {
+        console.warn('some error in sending ws message');
+    }
 }
