@@ -10,8 +10,8 @@ const { send } = require('process');
 
 const active_state = 'expanded'; // name of the filter to activate when they are talking
 const inactive_state = 'normal'; // name of filter when not talking
-const quiet_time = 4000; // how long input is quiet before switching to inactive state
-const interval_period = 150; // how often to run the changeScene function
+const quiet_time = 4000; // milliseconds, how long input is quiet before switching to inactive state
+const interval_period = 150; // milliseconds, how often to run the changeScene function
 const websocket_host = 'localhost' // address of machine running obs with websocket plugin
 const websocket_port = 4444; // port where obs websocket plugin is running
 const websocket_password = 'secret'; // password for websocket
@@ -167,7 +167,7 @@ setInterval(() => {
 }, interval_period);
 
 process.on('unhandledRejection', (reason, p) => {
-    console.log('Unhandled Rejection at: Promise', p, 'reason:', reason.stack);
+    console.log('Unhandled Rejection at: ', p, 'reason:', reason.stack);
     // application specific logging, throwing an error, or other logic here
   });
 
